@@ -7,22 +7,123 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const {videoId} = req.params
     //TODO: toggle like on video
+    if(isValidObjectId(videoId)){
+        throw new ApiError(400,"Invalid videoId")
+    }
+
+    const createLike = await Like.create({
+        video:videoId,
+        likedBy:req.user?._id
+
+    })
+
+    const newLike = await Like.findById(createLike._id);
+
+
+    if(!newLike){
+        throw new ApiError(500," Something went wrong while creating like")
+    }
+
+    return res.status(200).json(new ApiResponse(200,newLike,"Video liked Successfully"))
+
 })
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const {commentId} = req.params
     //TODO: toggle like on comment
+    if(isValidObjectId(commentId)){
+        throw new ApiError(400,"Invalid videoId")
+    }
+
+    const createLike = await Like.create({
+        comment:commentId,
+        likedBy:req.user?._id
+
+    })
+
+    const newLike = await Like.findById(createLike._id);
+
+
+    if(!newLike){
+        throw new ApiError(500," Something went wrong while creating like")
+    }
+
+    return res.status(200).json(new ApiResponse(200,newLike,"Comment liked Successfully"))
+
+
 
 })
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const {tweetId} = req.params
     //TODO: toggle like on tweet
+    if(isValidObjectId(tweetId)){
+        throw new ApiError(400,"Invalid videoId")
+    }
+
+    const createLike = await Like.create({
+        tweet:tweetId,
+        likedBy:req.user?._id
+
+    })
+
+    const newLike = await Like.findById(createLike._id);
+
+
+    if(!newLike){
+        throw new ApiError(500," Something went wrong while creating like")
+    }
+
+    return res.status(200).json(new ApiResponse(200,newLike,"Tweet liked Successfully"))
+
+
 }
 )
 
 const getLikedVideos = asyncHandler(async (req, res) => {
     //TODO: get all liked videos
+    const userId = req.user?._id
+
+    const data = await Like.aggregate([{
+        $match:{
+            likedBy:mongoose.Types.ObjectId(userId)
+        }
+    },
+    {
+        $lookup:{
+            from:'videos',
+            localField:'video',
+            foreignField:'_id',
+            as:"likedvideos"
+        }
+    },
+    {
+        $addFields: {
+            likedCount: {
+                $size: "$likedvideos"
+            }
+           
+        }
+    },
+    {
+        $project:{
+            videoFile:1,
+            thumbnail:1,
+            title:1,
+            description:1,
+            duration:1,
+            views:1,
+            owner:1
+            
+        }
+    }
+])
+ 
+ if(!data?.length){
+    throw new ApiError(404, "videos does not exists")
+ }
+
+ return res.status(200).json(new ApiResponse(200,data[0],"Liked Video Fetched Successfully"))
 })
 
 export {
