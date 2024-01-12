@@ -47,9 +47,14 @@ const updateTweet = asyncHandler(async (req, res) => {
     //TODO: update tweet
     const {tweetId} = req.params
     const {content } =req.body
-    if(!isValidObjectId(tweetId)){
-        throw new ApiError(400,"Invalid TweetId ")
+    const userId = req.user._id
+    const tweet = await Tweet.findOne({_id:tweetId})
+    if(!tweet){
+        throw new ApiError(400,"Invalid Tweet Id or Tweet not Exist")
     }
+   if(tweet.owner.toString()!== userId.toString()){
+    throw new ApiError(400,"Other userer want to update Tweet")
+   }
 
     if(!content?.trim()){
       throw new ApiError(400,"content is required for update a tweet")
@@ -69,9 +74,14 @@ const updateTweet = asyncHandler(async (req, res) => {
 const deleteTweet = asyncHandler(async (req, res) => {
     //TODO: delete tweet
     const {tweetId} = req.params
-    if(!isValidObjectId(tweetId)){
-        throw new ApiError(400,"Invalid tweetId")
+    const userId = req.user._id
+    const tweet = await Tweet.findOne({_id:tweetId})
+    if(!tweet){
+        throw new ApiError(400,"Invalid Tweet Id or Tweet not Exist")
     }
+   if(tweet.owner.toString()!== userId.toString()){
+    throw new ApiError(400,"Other user want to delete Tweet")
+   }
     const deletedTweet = await Tweet.findByIdAndDelete(tweetId)
    
 
