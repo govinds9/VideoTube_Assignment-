@@ -58,7 +58,7 @@ if(!isValidObjectId(playlistId)){
     throw new ApiError(500," Playlist not exist ")
  }
 
- return res.status(200).json(new ApiResponse(200,"Playlist is fetched successfully"))
+ return res.status(200).json(new ApiResponse(200,playlist,"Playlist is fetched successfully"))
 })
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
@@ -77,14 +77,14 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(500,"Video not Exist ")
     }
 
-    if(availableVideo.owner!==req.user._id  || playlist.owner !== req.user._id){
+    if(availableVideo.owner.toString()!==req.user._id.toString()  || playlist.owner.toString() !== req.user._id.toString()){
         throw new ApiError(400, "UnAuthorized User trying to change playlist ")
     }
     playlist.videos.push(videoId)
    const videoAdded= await playlist.save()
 
 
-    return res.status(200).json(200,videoAdded,"Video is added to plylist Successfully")
+    return res.status(200).json(new ApiResponse(200,videoAdded,"Video is added to plylist Successfully"))
 
     
 
@@ -108,7 +108,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(500,"Video not Exist ")
     }
 
-    if(availableVideo.owner!==req.user._id  || playlist.owner !== req.user._id){
+    if(availableVideo.owner.toString()!==req.user._id.toString()  || playlist.owner.toString()!== req.user._id.toString()){
         throw new ApiError(400, "UnAuthorized User trying to change playlist ")
     }
      

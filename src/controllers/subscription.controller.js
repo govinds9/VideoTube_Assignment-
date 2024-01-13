@@ -37,7 +37,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const subscriberList = await Subscription.aggregate([
         {
             $match:{
-                channel:new mongoose.Types.ObjectId
+                channel:new mongoose.Types.ObjectId(channelId)
             }
         },
         {
@@ -49,22 +49,21 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
             }
         },
         {
-            $addFields:{
-                subscriberCount:{
-                    $size:"$subscribers"
-                }
-            }
+            $unwind: '$subscribers', // Unwind the array
         },
-        {
-            $project:{
-                username:1,
-                email:1,
-                fullName:1,
-                avatar:1,
-                coverImage:1,
-            }
-        }
+        
+       {
+                $project:{
+                    _id:"$subscribers._id",
+                    username:"$subscribers.username",
+                    email:"$subscribers.email",
+                    fullName:"$subscribers.fullName",
+                    avatar:"$subscribers.avatar",
+                    coverImage:"$subscribers.coverImage",
+                }
+          }
     ])
+
 
     res.status(200).json(new ApiResponse(200,subscriberList,"Subscriber are Fetched Successfully"))
 })
@@ -90,19 +89,23 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
         as:"channels"
     }
     },
+    {
+        $unwind: '$channels', // Unwind the array
+    },
     
    {
             $project:{
-                username:1,
-                email:1,
-                fullName:1,
-                avatar:1,
-                coverImage:1,
+                _id:"$channels._id",
+                username:"$channels.username",
+                email:"$channels.email",
+                fullName:"$channels.fullName",
+                avatar:"$channels.avatar",
+                coverImage:"$channels.coverImage",
             }
       }
     
    ])
-
+ 
 
    res.status(200).json(new ApiResponse(200,channelList,"Subscribed Channel are fetched Successfully"))
 
